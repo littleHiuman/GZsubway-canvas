@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<style type="text/css">
+			*{ margin: 0;padding: 0; }
+			.hiden{ position: fixed;width: 100%;height: 100%;background: lightyellow;-webkit-transition: all 1s;transition: all 1s; }
+			.wrap{ width: 300px;height: 30px;border: 2px solid orange;position: absolute;top: 50%;left: 50%;margin-top: -15px;margin-left: -150px;border-radius: 10px;overflow: hidden; }
+			.wrap .prog{ width: 0;height: 100%;background: orange;text-align: center;line-height: 30px;font-family: arial;color: red;font-weight: bold; }
+			canvas{ border: 1px solid red; }
+			.clear{ clear: both; }
+			select{ float: left;margin-top: 10px; }
+			.searchbar{ float: left;margin-left: 40px;height: 30px;line-height: 30px;margin-top: 4px; }
+			.intro{ display: none; }
+			.btn{ width: 100px;height: 30px;margin-left: 5px; }
+		</style>
+		<script type="text/javascript" src="start.js"></script>
+		<script type="text/javascript" src="mess.json"></script>
+		<script type="text/javascript">
+			
+				window.onload = function(){
+					var button = document.getElementsByClassName("btn")[0];
+					var search = document.getElementById("search");
+					var lineSelect = document.getElementById('lineSelect');
+					var intro = document.getElementById("intro");
+					var place = document.getElementById("place");
+					var canvas = document.getElementById("canvas");
+					var ctx = canvas.getContext('2d');
+					// 加载1号线
+					getJSON()
+					setInterval(function(){
+						if(search.value.trim()==''){
+							button.setAttribute('disabled','disabled')
+						}else{
+							button.removeAttribute('disabled')
+						}
+					},500);
+					lineSelect.onchange = function (){
+						var optionvalue = lineSelect.options[lineSelect.options.selectedIndex].value
+						// console.log(optionvalue)
+						getJSON(optionvalue)
+					}
+					search.onkeyup = function(){
+						if (event.keyCode == "13") {
+							checkinput()
+						}
+					}
+					
+					button.onclick = checkinput;
+					function checkinput(){
+						var chinese = new RegExp(/[\u4e00-\u9fa5]+/);
+						if(chinese.test(search.value)){
+							intro.innerText = '位于'
+							getJSON(search.value)
+						}else {
+							alert('不是中文字符')
+						}
+					}
+					var list = 0;
+					var listArr = [];
+					var lines = [];
+					var ordinate,drawColor,text,afterOrdinate;
+					var lineChineseName;
+					function getJSON(val){
+							place.innerText = ""
+							listArr = [];
+							intro.innerText = '位于'
+							lines = []
+						if(val != undefined){
+							var letter = new RegExp(/^[A-Za-z]+$/);
+							// 如果是英文，则绘制路线，
+							// 如果是中文，则打印路线名。
+							//
+							
+							for(var i=0;i<info.mess.length;i++){
+								// console.log(info.mess[i])
+								for (line in info.mess[i]) {
+									// 打印出所有line名（key）
+									// console.log(line)
+									canvas.height=canvas.height;
+									ctx.fillStyle = 'red';
+									ctx.font = '40px 微软雅黑';
+									ctx.fillText('北',150,750);
+									var patt = new RegExp(val);  //匹配规则：输入的值
+									var patt2 = new RegExp(/line/);  //匹配规则：输入的值
+									
+									if(letter.test(val)){  //匹配输入的值是不是英文字符，即路线名，是的话，就绘制路线
+										// console.log(val)
+										// console.log(info.mess[i][val])
+										if(!patt2.test(val)){
+											// console.log(val)
+											val = 'line'+val;
+										}
+										switch(val){
+											case 'lineOne': lineChineseName = '1号线';break;
+											case 'lineTwo': lineChineseName = '2号线';break;
+											case 'lineThree': lineChineseName = '3号线';break;
+											case 'lineThreeTwo': lineChineseName = '3号线延北';break;
+											case 'lineFour': lineChineseName = '4号线';break;
+											case 'lineFive': lineChineseName = '5号线';break;
+											case 'lineSix': lineChineseName = '6号线';break;
+											case 'lineSeven': lineChineseName = '7号线';break;
+											case 'lineEight': lineChineseName = '8号线';break;
+											case 'lineAPM': lineChineseName = 'APM线';break;
+											case 'lineGF': lineChineseName = '广佛线';break;
+										}
+										ctx.fillText(lineChineseName,150,150);
+										ctx.fillStyle = 'black';
+										ctx.font = '14px arial';
+										for(var x=0;x<info.mess[i][val].length;x++){
+											var now = info.mess[i][val][x];
+											// console.log(info.mess[i][val][x])
+											ordinate = now.coOrdinate;
+											drawColor = now.color;
+											text = now.name;
+											afterOrdinate = ordinate.split(",")
+											ctx.strokeStyle = drawColor;
+											switch(val){
+												case 'lineOne':
+													var calcuone = (afterOrdinate[0]-112) * 6000.00 - 7300;
+													var calcutwo = (afterOrdinate[1]-22) * 3000.00 - 2900;
+													break;
+												case 'lineTwo':
+													var calcuone = (afterOrdinate[0]-112) * 2250.00 - 2445;
+													var calcutwo = (afterOrdinate[1]-22) * 3400.00 - 3365;
+													break;
+												case 'lineThree':
+													var calcuone = (afterOrdinate[0]-112) * 5000.00 - 6300;
+													var calcutwo = (afterOrdinate[1]-22) * 3500.00 - 3270;
+													break;
+												case 'lineThreeTwo':
+													var calcuone = (afterOrdinate[0]-112) * 3750.00 - 4400;
+													var calcutwo = (afterOrdinate[1]-22) * 3200.00 - 3600;
+													break;
+												case 'lineFour':
+													var calcuone = (afterOrdinate[0]-112) * 3000.00 - 3900;
+													var calcutwo = (afterOrdinate[1]-22) * 2400.00 - 1890;
+													break;
+												case 'lineFive':
+													var calcuone = (afterOrdinate[0]-112) * 3000.00 - 3620;
+													var calcutwo = (afterOrdinate[1]-22) * 4400.00 - 4500;
+													break;
+												case 'lineSix':
+													var calcuone = (afterOrdinate[0]-112) * 2600.00 - 3110;
+													var calcutwo = (afterOrdinate[1]-22) * 4000.00 - 4100;
+													break;
+												case 'lineSeven':
+													var calcuone = (afterOrdinate[0]-112) * 4500.00 - 5600;
+													var calcutwo = (afterOrdinate[1]-22) * 2000.00 - 1700;
+													break;
+												case 'lineEight':
+													var calcuone = (afterOrdinate[0]-112) * 5000.00 - 6200;
+													var calcutwo = (afterOrdinate[1]-22) * 4000.00 - 4000;
+													break;
+												case 'lineAPM':
+													var calcuone = (afterOrdinate[0]-112) * 1850.00 - 2045;
+													var calcutwo = (afterOrdinate[1]-22) * 8500.00 - 9100;
+													break;
+												case 'lineGF':
+													var calcuone = (afterOrdinate[0]-112) * 4000.00 - 4350;
+													var calcutwo = (afterOrdinate[1]-22) * 2800.00 - 2500;
+													break;
+											}
+											// var calcuone = (afterOrdinate[0]-112) * 1850.00 - 2045;
+											// var calcutwo = (afterOrdinate[1]-22) * 1400.00 - 1100;
+										
+											ctx.lineTo(calcuone,calcutwo);
+											ctx.fillText(text,calcuone,calcutwo);
+											ctx.textBaseline = "top";  //基线
+											ctx.textAlign = "end"
+											ctx.moveTo(calcuone,calcutwo)
+											ctx.arc(calcuone,calcutwo,4,0,360*Math.PI/180,false);
+											ctx.closePath();
+											ctx.stroke();
+										}
+										
+										break;
+									}else{
+										
+										var namepatt = new RegExp(val);
+										for(var x=0;x<info.mess[i][line].length;x++){
+											// console.log(info.mess[i][line][x])
+											
+											if(namepatt.test(info.mess[i][line][x].name)){
+												// console.log(info.mess[i][line][x].name)
+												if(listArr.length == 1){
+													if(listArr[0]==info.mess[i][line][x].name){
+													}else{
+														listArr.push(info.mess[i][line][x].name);
+													}
+												}else{
+														listArr.push(info.mess[i][line][x].name);
+												}
+												if(info.mess[i][line][x].isTransfer){
+													lines.push(intro.innerText+info.mess[i][line][x].isTransfer)
+												}else{
+													lines.push(line)
+												}
+											}
+											if(line == 'lineGF' && x == info.mess[i][line].length-1){
+												if(listArr.length>1){
+													intro.innerText = "";
+													for(var z =0;z<listArr.length;z++){
+															place.innerText = place.innerText+listArr[z]+'，'
+														}
+													}else if(listArr.length ==1){
+														place.innerText+=listArr[0]
+														// console.log(lines)
+														if(lines.length>1){
+															for(var z =0;z<lines.length;z++){
+																	intro.innerText = intro.innerText+lines[z]+'，'
+																}
+															}else{
+																intro.innerText+=lines[0]
+															}
+															setTimeout(function(){
+																getJSON(lines[0].substr(2))
+															},1000)
+														}else{
+															place.innerText = '……'
+															intro.innerText = "";
+														}
+														// console.log(listArr + ' , '+ lines)
+													}
+												}
+											}
+											
+										}
+									}
+								}else{
+									// 一打开页面加载的内容
+									for(var i=0;i<info.mess.length;i++){
+										for (line in info.mess[i]) {
+											canvas.height=canvas.height;
+											ctx.fillStyle = 'red';
+											ctx.font = '40px 微软雅黑';
+											ctx.fillText('北',150,750);
+											ctx.fillText('1号线',150,150);
+											ctx.fillStyle = 'black';
+											ctx.font = '12px arial';
+											for(var x=0;x<info.mess[i].lineOne.length;x++){
+												var now = info.mess[i].lineOne[x];
+												ordinate = now.coOrdinate;
+												drawColor = now.color;
+												text = now.name;
+												afterOrdinate = ordinate.split(",")
+												ctx.strokeStyle = drawColor;
+												var calcuone = (afterOrdinate[0]-112) * 6000.00 - 7300;
+												var calcutwo = (afterOrdinate[1]-22) * 3000.00 - 2900;
+												ctx.lineTo(calcuone,calcutwo);
+												ctx.fillText(text,calcuone,calcutwo);
+												ctx.moveTo(calcuone,calcutwo)
+												ctx.arc(calcuone,calcutwo,4,0,360*Math.PI/180,false);
+												ctx.closePath();
+												ctx.stroke();
+											}
+										}
+									}
+								}
+							}
+							
+						}
+				</script>
+			</head>
+			<body>
+				<div class="hiden">
+					<div class="wrap">
+						<div class="prog">0%</div>
+					</div>
+				</div>
+				<canvas id="canvas" width="850px" height="880px" style="float: left;">你的浏览器不支持canvas，请更换浏览器后再试。</canvas>
+				<canvas id="canvastwo" width="850px" height="880px" style="float: left;">你的浏览器不支持canvas，请更换浏览器后再试。</canvas>
+				<div class="clear"></div>
+				<select id="lineSelect" name="sel">
+					<option value="One" selected>一号线</option>
+					<option value="Two">二号线</option>
+					<option value="Three">三号线</option>
+					<option value="ThreeTwo">三号线延北</option>
+					<option value="Four">四号线</option>
+					<option value="Five">五号线</option>
+					<option value="Six">六号线</option>
+					<option value="Seven">七号线</option>
+					<option value="Eight">八号线</option>
+					<option value="APM">APM线</option>
+					<option value="GF">广佛线</option>
+				</select>
+				<div class="searchbar"><input style="height: 28px;" type="text" placeholder="search the name" id="search"><input type="button" value="搜索" class="btn" disabled="disabled"><span id="place"></span><span id="intro">位于</span></div>
+				<script type="text/javascript">
+					var GZ = function(data){
+						// console.log(data)
+						// var canvas = document.getElementById("canvas");
+						// var ctx = canvas.getContext('2d');
+						
+						// canvastwo
+						var canvastwo = document.getElementById("canvastwo");
+						var ctxtwo = canvastwo.getContext('2d');
+						// ctx.beginPath();
+						
+						var ordinate;
+						var drawColor;
+						var afterOrdinate;
+						var text;
+						var patt1 = new RegExp("MSG");
+						var patt2 = new RegExp("Two");
+						var ordin = new Array();
+						// 获取key
+						// for (n in data) {
+							// 	if(patt1.test(n)){
+								// 		ctx.stroke();
+								// 		ctx.beginPath();
+								// 		// break;
+							// 	}else{
+								// 		for(var x = 0;x<data[n].length;x++){
+									// 			ordinate = data[n][x].coOrdinate;
+									// 			drawColor = data[n][x].color;
+									// 			text = data[n][x].name;
+									// 			afterOrdinate = ordinate.split(",")
+									// 			ctx.strokeStyle = drawColor;
+									// 			var calcuone = (afterOrdinate[0]-112) * 1850.00 - 2045;
+									// 			var calcutwo = (afterOrdinate[1]-22) * 1400.00 - 1100;
+									// 			ctx.lineTo(calcuone,calcutwo);
+									// 			ctx.fillText(text,calcuone,calcutwo);
+									// 			ctx.moveTo(calcuone,calcutwo)
+									// 			ctx.arc(calcuone,calcutwo,4,0,360*Math.PI/180,false);
+									// 			ctx.closePath();
+									// 			ctx.stroke();
+								// 		}
+							// 	}
+						// }
+						for (n in data) {
+							if(patt1.test(n)){
+								ctxtwo.stroke();
+								ctxtwo.beginPath();
+								// break;
+								
+							}else{
+								for(var x = 0;x<data[n].length;x++){
+									ordinate = data[n][x].coOrdinate;
+									drawColor = data[n][x].color;
+									text = data[n][x].name;
+									afterOrdinate = ordinate.split(",")
+									ctxtwo.fillStyle = 'red';
+									ctxtwo.font = '40px 微软雅黑';
+									ctxtwo.fillText('北',150,750);
+									ctxtwo.fillText('all',150,150);
+									ctxtwo.fillStyle = 'black';
+									ctxtwo.font = '12px arial';
+									// console.log(afterOrdinate)
+									// console.log(((afterOrdinate[0].replace(/113\./,"0.")) * 1000.00).toFixed(4))
+									// console.log(((afterOrdinate[1].replace(/23\./,"0.")) * 1000.00).toFixed(4))
+									// afterOrdinate = ordinate.replace(/113\./,"0.").replace(/\,23\./,",0.")
+									// console.log(ordinate+" ==> "+afterOrdinate)
+									ctxtwo.strokeStyle = drawColor;
+									
+									// var calcuthree = (afterOrdinate[0]-112) * 2500.00 - 2750;
+									// var calcufour = (afterOrdinate[1]-22) * 2100.00 -1900;
+									
+									var calcuthree = (afterOrdinate[0]-112) * 1850.00 - 2045;
+									var calcufour = (afterOrdinate[1]-22) * 1400.00 - 1100;
+									ctxtwo.lineTo(calcuthree,calcufour);
+									// ctxtwo.fillText(text,calcuthree,calcufour);
+									ctxtwo.moveTo(calcuthree,calcufour)
+									ctxtwo.arc(calcuthree,calcufour,4,0,360*Math.PI/180,false);
+									ctxtwo.closePath();
+									ctxtwo.stroke();
+								}
+							}
+						}
+					}
+				</script>
+				<script type="text/javascript" src="message.json"></script>
+			</body>
+		</html>
