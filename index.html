@@ -1,266 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 	<head>
 		<meta charset="utf-8">
 		<title>index</title>
-		<style type="text/css">
-			*{ margin: 0;padding: 0; }
-			.hiden{ position: fixed;width: 100%;height: 100%;background: lightyellow;-webkit-transition: all 1s;transition: all 1s; }
-			.hiden .wrap{ width: 300px;height: 30px;border: 2px solid orange;position: absolute;top: 50%;left: 50%;margin-top: -15px;margin-left: -150px;border-radius: 10px;overflow: hidden; }
-			.hiden .prog{ width: 0;height: 100%;background: orange;text-align: center;line-height: 30px;font-family: arial;color: red;font-weight: bold; }
-			#canvas, #canvastwo{ border: 1px solid red;float:left; }
-			.clear{ clear: both; }
-			#lineSelect{ float: left;margin-top: 10px; }
-			.searchbar{ float: left;margin-left: 40px;height: 30px;line-height: 30px;margin-top: 4px; }
-			.searchbar #search{ height: 28px; }
-			.searchbar .btn{ width: 100px;height: 30px;margin-left: 5px; }
-		</style>
+		<link rel="stylesheet" href="./index.css">
 	</head>
 	<body>
 		<!-- 进度条 -->
-		<div class="hiden">
+		<div id="progress">
 			<div class="wrap">
 				<div class="prog">0%</div>
 			</div>
 		</div>
+		<div>
+			<!-- 地铁线路选择 -->
+			<select id="lineSelect"></select>
+			<!-- 搜索地铁名 -->
+			<input type="text" placeholder="请输入地铁站名" id="search">
+			<input type="button" value="搜索" class="search-btn" disabled="disabled">
+			<!-- 搜索结果 -->
+			<span id="place"></span>
+		</div>
+		<div class="clear"></div>
 
 		<!-- 细节图 -->
 		<canvas id="canvas" width="850px" height="880px">你的浏览器不支持canvas，请更换浏览器后再试。</canvas>
 		<!-- 全览图 -->
-		<canvas id="canvastwo" width="850px" height="880px">你的浏览器不支持canvas，请更换浏览器后再试。</canvas>
+		<canvas id="canvas-two" width="850px" height="880px">你的浏览器不支持canvas，请更换浏览器后再试。</canvas>
 		<div class="clear"></div>
-
-		<!-- 地铁线路选择 -->
-		<select id="lineSelect" name="sel"></select>
-
-		<!-- 搜索地铁名 -->
-		<div class="searchbar">
-			<input type="text" placeholder="请输入地铁站名" id="search">
-			<input type="button" value="搜索" class="btn" disabled="disabled">
-			<span id="place"></span>
-		</div>
 
 		<!-- 地铁站点信息 -->
 		<script type="text/javascript" src="mess.js"></script>
-
-		<script type="text/javascript">
-			// 进度条加载
-			var prog = document.getElementsByClassName('prog')[0];
-			var hiden = document.getElementsByClassName('hiden')[0];
-			var timer = setInterval(function(){
-				var progWidth = getComputedStyle(prog, null)['width'].replace('px','').replace('%','');
-				progWidth = progWidth == ''?0:parseInt(progWidth);
-				if(progWidth >= 100){
-					prog.style.width = 100 + '%'
-					prog.innerText = 100 + '%'
-					clearInterval(timer)
-					hiden.style.transform = 'rotate(360deg)'
-					hiden.style.width = 0;
-					hiden.style.height = 0;
-					setTimeout(() => {
-						hiden.style.display = 'none';
-					},500)
-				}else{
-					prog.style.width = (progWidth+10) + '%';
-					prog.innerText = (progWidth+10) +'%';
-				}
-			},500);
-
-			// 获取key值
-			var allLineKey = [];
-			function getKey(){
-				for(var i in info.lineInfo){
-					allLineKey.push(i);
-				}
-			}
-			getKey();
-
-			// 获取name值
-			var allLineName = [];
-			function getName(){
-				for(var i in info.lineMsg){
-					allLineName.push(info.lineMsg[i].name);
-				}
-			}
-			getName();
-
-
-			// 搜索 / 选择
-			var button = document.getElementsByClassName("btn")[0];
-			var search = document.getElementById("search");
-			var lineSelect = document.getElementById('lineSelect');
-
-			button.onclick = checkinput;
-			search.onkeyup = function(event){
-				if (event.keyCode == "13") {
-					checkinput()
-				}
-				if(search.value.trim()==''){
-					button.setAttribute('disabled','disabled')
-				}else{
-					button.removeAttribute('disabled')
-				}
-			}
-
-			function checkinput(){
-				var chinese = new RegExp(/[\u4e00-\u9fa5]+/);
-				if(chinese.test(search.value)){
-					drawPerLine(search.value)
-				}else {
-					alert('不是中文字符')
-				}
-			}
-
-			var str;
-			for(var i=0;i<allLineName.length;i++){
-				str += '<option value="' + allLineKey[i].replace('line','') + '"'
-				if(i == 0){
-					str += ' selected>'
-				}else{
-					str += '>'
-				}
-				str += allLineName[i] + '</option>'
-			}
-			lineSelect.innerHTML = str;
-			lineSelect.onchange = function (){
-				var optionvalue = lineSelect.options[lineSelect.options.selectedIndex].value
-				drawPerLine(optionvalue)
-			}
-
-			var place = document.getElementById("place");
-			var canvas = document.getElementById("canvas");
-			var ctx = canvas.getContext('2d');
-			var canvastwo = document.getElementById("canvastwo");
-			var ctxtwo = canvastwo.getContext('2d');
-
-			// 加载1号线
-			drawPerLine()
-			// 加载所有线
-			drawAllLine()
-
-			// 绘制路线图
-			function drawLine(val,ctx,isDefault){
-				for(var i in info.lineInfo){
-					if(i == val){
-						ctx.beginPath();
-						ctx.fillStyle = 'red';
-						ctx.font = '40px 微软雅黑';
-						ctx.fillText('北',150,750);
-						var thisMsg = info.lineMsg[i+'MSG'];
-						var fillName = isDefault?'all':thisMsg.name;
-						ctx.fillText(fillName,150,150);
-						ctx.fillStyle = 'black';
-						ctx.font = '12px arial';
-
-						for(var x=0;x<info.lineInfo[i].length;x++){
-							var now = info.lineInfo[i][x];
-							var ordinate = now.coOrdinate;
-							var drawColor = thisMsg.color;
-							var text = isDefault?'':now.name;
-							var afterOrdinate = ordinate.split(",")
-							var calcuX;
-							var calcuY;
-
-							if(isDefault){
-								calcuX = eval(thisMsg.defaultCal.x);
-								calcuY = eval(thisMsg.defaultCal.y);
-							}else{
-								calcuX = eval(thisMsg.offsetCal.x);
-								calcuY = eval(thisMsg.offsetCal.y);
-							}
-
-							ctx.strokeStyle = drawColor;
-							ctx.lineTo(calcuX,calcuY);
-							ctx.fillText(text,calcuX,calcuY);
-							if(!isDefault){
-								ctx.textBaseline = "top";  //基线
-								ctx.textAlign = "end"
-							}
-							ctx.moveTo(calcuX,calcuY)
-							ctx.arc(calcuX,calcuY,4,0,360*Math.PI/180,false);
-							ctx.closePath();
-							ctx.stroke();
-						}
-						break;
-					}
-				}
-			}
-
-			// 获取线路
-			function getLine(val){
-				if(!val) return;
-				let line = [];
-				for(var i in info.lineInfo){
-					for(var j in info.lineInfo[i]){
-						if(info.lineInfo[i][j].name.indexOf(val) != -1){
-							line.push(i)
-							place.innerText = place.innerText.length?place.innerText+', '+info.lineMsg[i+'MSG'].name:'位于'+info.lineMsg[i+'MSG'].name
-						}
-					}
-				}
-				place.innerText = place.innerText.length?place.innerText:'未知'
-				return line;
-			}
-
-			// 处理数据
-			// 绘制细节图
-			function drawPerLine(val){
-				var ordinate,drawColor,text,afterOrdinate;
-				var lineChineseName;
-
-				place.innerText = ""
-
-				if(!val){
-					// 一打开页面加载的内容
-					canvas.height=canvas.height;
-					drawLine(allLineKey[lineSelect.options.selectedIndex],ctx)
-				}else{
-					val = val.trim();
-					var letter = new RegExp(/^[A-Za-z]+$/);
-					// 如果是英文，代表下拉选择的，则绘制路线，
-					// 如果是中文，代表输入的，则打印路线名。
-					if(letter.test(val)){
-						if(allLineKey.indexOf('line'+val) != -1){
-							val = 'line'+val;
-							canvas.height=canvas.height;
-							drawLine(allLineKey[allLineKey.indexOf(val)],ctx)
-						}
-					}else{
-						let line = getLine(val);
-						canvas.height=canvas.height;
-						for(var i = 0; i < line.length;i++){
-							drawLine(allLineKey[allLineKey.indexOf(line[i])],ctx)
-						}
-					}
-
-				}
-			}
-			// 绘制全览图
-			function drawAllLine(){
-				for(var i in info.lineInfo){
-					drawLine(i,ctxtwo,true);
-				}
-			}
-
-			// 距离
-			function getInstance(coOrdinate1,coOrdinate2){
-				var coOrdinate1X =  coOrdinate1.split(',')[0]
-				var coOrdinate1Y =  coOrdinate1.split(',')[1]
-				var coOrdinate2X =  coOrdinate2.split(',')[0]
-				var coOrdinate2Y =  coOrdinate2.split(',')[1]
-
-				var afterX = coOrdinate1X-coOrdinate2X;
-				afterX = afterX>=0?afterX:-afterX;
-				var afterY = coOrdinate1Y-coOrdinate2Y;
-				afterY = afterY>=0?afterY:-afterY;
-				var distance = Math.sqrt(afterX*afterX + afterY*afterY)
-				console.log(distance);
-			}
-			getInstance('113.23861,23.070983','113.23904,23.084633')
-			// http://www.hhlink.com/%E7%BB%8F%E7%BA%AC%E5%BA%A6
-			// 0.01365677121431198
-			// 1.518公里
-			// 0.943英里
-		</script>
+		<!-- 数据处理 -->
+		<script type="text/javascript" src="./index.js"></script>
 	</body>
 </html>
