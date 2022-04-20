@@ -936,7 +936,7 @@ var info = {
         name: '柯木塱',
         isTransfer: false,
         pinYin: '',
-        coOrdinate: '',
+        coOrdinate: '113.395991,23.193462',
         color: 'rgb(80,2,103)'
       },
       {
