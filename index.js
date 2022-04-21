@@ -108,11 +108,6 @@ let canvasTwo = document.getElementById('canvas-two')
 let canvasTwoHeight = canvasTwo.height
 let ctxTwo = canvasTwo.getContext('2d')
 
-let defaultCal = {
-  x: '(afterOrdinate[0]-112) * 1895.00 - 2095',
-  y: '(afterOrdinate[1]-22) * 1445.00 - 1140'
-}
-
 // 加载1号线
 drawPerLine()
 // 加载所有线
